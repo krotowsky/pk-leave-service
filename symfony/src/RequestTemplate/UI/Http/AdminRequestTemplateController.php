@@ -3,6 +3,7 @@
 namespace App\RequestTemplate\UI\Http;
 
 use App\RequestTemplate\Domain\Model\RequestTemplate;
+use App\RequestTemplate\Domain\Repository\CustomFieldDefinitionRepository;
 use App\RequestTemplate\UI\Http\DTO\SaveRequestTemplateDTO;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,10 +12,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 
 class AdminRequestTemplateController extends AbstractController
 {
-
     #[Route('/api/admin/request-templates', name: 'create_request_template', methods: ['POST'])]
     #[OA\RequestBody(
         required: true,
@@ -33,6 +34,12 @@ class AdminRequestTemplateController extends AbstractController
                         'endDate' => ['type' => 'date', 'required' => true],
                         'reason' => ['type' => 'string', 'minLength' => 5]
                     ]
+                ),
+                new OA\Property(
+                    property: 'customFieldIds',
+                    type: 'array',
+                    items: new OA\Items(type: 'string'),
+                    example: ['uuid-1', 'uuid-2']
                 )
             ]
         )
@@ -70,7 +77,8 @@ class AdminRequestTemplateController extends AbstractController
     public function __invoke(
         Request $request,
         EntityManagerInterface $em,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        CustomFieldDefinitionRepository $customFieldRepository
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
         $dto = new SaveRequestTemplateDTO($data);
@@ -86,14 +94,25 @@ class AdminRequestTemplateController extends AbstractController
             return new JsonResponse(['status' => 'error', 'errors' => $errors], 400);
         }
 
-        $existing = $em->getRepository(RequestTemplate::class)->find($dto->id);
+        $template = $em->getRepository(RequestTemplate::class)->find($dto->id)
+            ?? new RequestTemplate(Uuid::fromString($dto->id), $dto->name);
 
-        $template = $existing ?? new RequestTemplate($dto->id, $dto->name, []);
+        $template->rename($dto->name);
         $template->setValidationRules($dto->validationRules);
+
+        // ➕ Obsługa customFieldIds
+        $template->getCustomFields()->clear();
+
+        foreach ($data['customFieldIds'] ?? [] as $fieldId) {
+            $field = $customFieldRepository->find($fieldId);
+            if ($field !== null) {
+                $template->addCustomField($field);
+            }
+        }
 
         $em->persist($template);
         $em->flush();
 
-        return new JsonResponse(['status' => 'saved', 'templateId' => $dto->id]);
+        return new JsonResponse(['status' => 'saved', 'templateId' => $template->getId()]);
     }
 }

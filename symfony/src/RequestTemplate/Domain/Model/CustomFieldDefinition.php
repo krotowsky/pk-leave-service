@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity]
+#[ORM\Table(name: 'custom_field_definition')]
 class CustomFieldDefinition
 {
     #[ORM\Id]

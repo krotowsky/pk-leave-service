@@ -16,7 +16,7 @@ class AdminCustomFieldController extends AbstractController
 {
     public function __construct(private readonly CustomFieldDefinitionRepository $repository) {}
 
-    #[Route('/custom-fields', name: 'create_custom_field', methods: ['POST'])]
+    #[Route('/api/custom-fields', name: 'create_custom_field', methods: ['POST'])]
     public function __invoke(
         Request $request,
         ValidatorInterface $validator
