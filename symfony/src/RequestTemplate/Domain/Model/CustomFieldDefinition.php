@@ -10,7 +10,7 @@ class CustomFieldDefinition
 {
     #[ORM\Id]
     #[ORM\Column(type: "uuid")]
-    private Uuid $id;
+    private string $id;
 
     #[ORM\Column(type: "string")]
     private string $name;
@@ -26,15 +26,17 @@ class CustomFieldDefinition
 
     public function __construct(string $name, string $type, bool $required, array $config)
     {
-        $this->id = Uuid::v4();
+        $this->id = Uuid::v4()->toRfc4122();
         $this->name = $name;
         $this->type = $type;
         $this->required = $required;
         $this->config = $config;
     }
 
-    // opcjonalnie gettery:
-    public function getId(): Uuid { return $this->id; }
+    public function getId(): Uuid
+    {
+        return Uuid::fromString($this->id);
+    }
     public function getName(): string { return $this->name; }
     public function getType(): string { return $this->type; }
     public function isRequired(): bool { return $this->required; }

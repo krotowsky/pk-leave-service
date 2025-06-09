@@ -3,10 +3,10 @@
 namespace App\LeaveRequest\Domain;
 
 use App\LeaveRequest\Domain\Event\LeaveRequestedEvent;
-use Ramsey\Uuid\Uuid;
+use Symfony\Component\Uid\Uuid;
 
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\UuidInterface;
+
 
 
 #[ORM\Entity]
@@ -15,9 +15,9 @@ class LeaveRequest
 {
     #[ORM\Id]
     #[ORM\Column(type: "uuid")]
-    private UuidInterface  $id;
+    private Uuid  $id;
     #[ORM\Column(type: "uuid")]
-    private UuidInterface  $employeeId;
+    private Uuid  $employeeId;
     #[ORM\Column(type: "date_immutable")]
     private \DateTimeImmutable $endDate;
     #[ORM\Column(type: "string", length: 255)]

@@ -8,8 +8,6 @@ services:
         exclude:
             - '../src/LeaveRequest/Domain/Event'
             - '../src/LeaveRequest/Domain/Exception'
-            # ✅ Removed invalid DTO exclusion here
-
 
 
     App\RequestTemplate\:
@@ -48,6 +46,7 @@ services:
     App\LeaveRequest\Infrastructure\Persistence\DoctrineLeaveRequestRepository:
         autowire: true
         autoconfigure: true
+
 
     App\LeaveRequest\Application\CommandHandler\RequestLeaveHandler:
         tags: [ 'messenger.message_handler' ]
