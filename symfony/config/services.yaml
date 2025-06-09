@@ -1,0 +1,63 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\LeaveRequest\:
+        resource: '../src/LeaveRequest/'
+        exclude:
+            - '../src/LeaveRequest/Domain/Event'
+            - '../src/LeaveRequest/Domain/Exception'
+            # ✅ Removed invalid DTO exclusion here
+
+
+
+    App\RequestTemplate\:
+        resource: '../src/RequestTemplate/'
+        exclude:
+            - '../src/RequestTemplate/Domain/Event'
+            - '../src/RequestTemplate/Domain/Exception'
+            - '../src/RequestTemplate/UI/Http/DTO/'
+
+    App\RequestTemplate\UI\Http\:
+        resource: '../src/RequestTemplate/UI/Http/'
+        tags: [ 'controller.service_arguments' ]
+
+    App\RequestTemplate\UI\Http\DTO\SaveRequestTemplateDTO:
+        autowire: false
+        autoconfigure: false
+        public: false
+
+    App\RequestTemplate\UI\Http\DTO\SaveCustomFieldDefinitionDTO:
+        autowire: false
+        autoconfigure: false
+        public: false
+
+    App\LeaveRequest\Infrastructure\Validator\RequestLeaveValidator:
+        arguments:
+            $ruleProvider: '@App\LeaveRequest\Application\Service\LeaveValidationRuleProvider'
+
+    App\RequestTemplate\Infrastructure\Persistence\DoctrineRequestTemplateRepository:
+        autowire: true
+        autoconfigure: true
+
+    App\RequestTemplate\Domain\Repository\RequestTemplateRepository:
+        alias: App\RequestTemplate\Infrastructure\Persistence\DoctrineRequestTemplateRepository
+        public: false
+
+    App\LeaveRequest\Infrastructure\Persistence\DoctrineLeaveRequestRepository:
+        autowire: true
+        autoconfigure: true
+
+    App\LeaveRequest\Application\CommandHandler\RequestLeaveHandler:
+        tags: [ 'messenger.message_handler' ]
+
+    App\LeaveRequest\Domain\LeaveRequestRepository:
+        alias: App\LeaveRequest\Infrastructure\Persistence\DoctrineLeaveRequestRepository
+
+    App\RequestTemplate\Infrastructure\Persistence\DoctrineCustomFieldDefinitionRepository:
+        autowire: true
+        autoconfigure: true
+
+    App\RequestTemplate\Domain\Repository\CustomFieldDefinitionRepository:
+        alias: App\RequestTemplate\Infrastructure\Persistence\DoctrineCustomFieldDefinitionRepository
